@@ -15,20 +15,21 @@ CREATE TABLE matches (
     id      SERIAL PRIMARY KEY,
     player1 INTEGER NOT NULL REFERENCES players,
     player2 INTEGER NOT NULL REFERENCES players,
-    mRound  INTEGER NOT NULL
+    winner  INTEGER REFERENCES players,
+    loser   INTEGER REFERENCES players
 );
 
-CREATE TABLE results (
-    matchId INTEGER NOT NULL REFERENCES matches,
-    winner  INTEGER NOT NULL REFERENCES players,
-    loser   INTEGER NOT NULL REFERENCES players
-);
-
-CREATE VIEW standings AS (
-    SELECT
-        players.id, players.name, r.wins, m.plays
-    FROM
-        players, (
-            SELECT
-        )
-);
+CREATE VIEW standings AS
+    SELECT players.id,
+           players.name,
+           COUNT(m3.id) AS wins,
+           (COUNT(m1.id) + COUNT(m2.id)) AS matches
+      FROM players
+ LEFT JOIN matches AS m1
+        ON players.id = m1.player1
+ LEFT JOIN matches AS m2
+        ON players.id = m2.player2
+ LEFT JOIN matches AS m3
+        ON players.id = m3.winner
+  GROUP BY players.id
+  ORDER BY wins DESC;
