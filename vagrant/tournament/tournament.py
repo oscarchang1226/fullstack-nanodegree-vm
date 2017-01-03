@@ -87,18 +87,8 @@ def reportMatch(winner, loser):
     """
     DB = connect()
     c = DB.cursor()
-    c.execute("SELECT id FROM matches WHERE player1 IN (%s, %s) AND " +
-              "player2 in (%s, %s)", (winner, loser, winner, loser))
-    matchId = c.fetchone()
-    if(matchId is None):
-        c.execute("INSERT INTO matches(player1, player2, winner, loser) " +
-                  "values(%s, %s, %s, %s)", (winner, loser, winner, loser))
-        c.execute("SELECT id FROM matches WHERE player1 IN (%s, %s) AND " +
-                  "player2 in (%s, %s)", (winner, loser, winner, loser))
-        matchId = c.fetchone()
-    matchId = matchId[0]
-    c.execute("UPDATE matches SET winner = %s, loser = %s " +
-              "WHERE id = %s", (winner, loser, matchId))
+    c.execute("INSERT INTO matches(winner, loser) values(%s, %s)",
+              (winner, loser))
     DB.commit()
     DB.close()
 
@@ -122,11 +112,4 @@ def swissPairings():
     pairings = [(standings[i][0], standings[i][1],
                  standings[i+1][0], standings[i+1][1])
                 for i in range(0, len(standings), 2)]
-    DB = connect()
-    c = DB.cursor()
-    for pairs in pairings:
-        c.execute("INSERT INTO matches(player1, player2) " +
-                  "values(%s, %s)", (pairs[0], pairs[2]))
-    DB.commit()
-    DB.close()
     return pairings
