@@ -13,8 +13,6 @@ CREATE TABLE players (
 
 CREATE TABLE matches (
     id      SERIAL PRIMARY KEY,
-    player1 INTEGER NOT NULL REFERENCES players,
-    player2 INTEGER NOT NULL REFERENCES players,
     winner  INTEGER REFERENCES players,
     loser   INTEGER REFERENCES players
 );
@@ -22,14 +20,12 @@ CREATE TABLE matches (
 CREATE VIEW standings AS
     SELECT players.id,
            players.name,
-           COUNT(m3.id) AS wins,
+           COUNT(m1.id) AS wins,
            (COUNT(m1.id) + COUNT(m2.id)) AS matches
       FROM players
  LEFT JOIN matches AS m1
-        ON players.id = m1.player1
+        ON players.id = m1.winner
  LEFT JOIN matches AS m2
-        ON players.id = m2.player2
- LEFT JOIN matches AS m3
-        ON players.id = m3.winner
+        ON players.id = m2.loser
   GROUP BY players.id
   ORDER BY wins DESC;
