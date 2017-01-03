@@ -6,6 +6,7 @@
 import psycopg2
 import bleach
 
+
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
     return psycopg2.connect("dbname=tournament")
@@ -28,6 +29,7 @@ def deletePlayers():
     DB.commit()
     DB.close()
 
+
 def countPlayers():
     """Returns the number of players currently registered."""
     DB = connect()
@@ -36,6 +38,7 @@ def countPlayers():
     result = c.fetchone()
     DB.close()
     return result[0]
+
 
 def registerPlayer(name):
     """Adds a player to the tournament database.
@@ -53,11 +56,12 @@ def registerPlayer(name):
     DB.commit()
     DB.close()
 
+
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
 
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
+    The first entry in the list should be the player in first place,
+    or a player tied for first place if there is currently a tie.
 
     Returns:
       A list of tuples, each of which contains (id, name, wins, matches):
@@ -73,6 +77,7 @@ def playerStandings():
     DB.close()
     return standings
 
+
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
 
@@ -82,20 +87,21 @@ def reportMatch(winner, loser):
     """
     DB = connect()
     c = DB.cursor()
-    c.execute("SELECT id FROM matches WHERE player1 IN (%s, %s) AND "
-              + "player2 in (%s, %s)", (winner, loser, winner, loser))
+    c.execute("SELECT id FROM matches WHERE player1 IN (%s, %s) AND " +
+              "player2 in (%s, %s)", (winner, loser, winner, loser))
     matchId = c.fetchone()
-    if(matchId == None):
-        c.execute("INSERT INTO matches(player1, player2, winner, loser) "
-                  + "values(%s, %s, %s, %s)", (winner, loser, winner, loser))
-        c.execute("SELECT id FROM matches WHERE player1 IN (%s, %s) AND "
-                  + "player2 in (%s, %s)", (winner, loser, winner, loser))
+    if(matchId is None):
+        c.execute("INSERT INTO matches(player1, player2, winner, loser) " +
+                  "values(%s, %s, %s, %s)", (winner, loser, winner, loser))
+        c.execute("SELECT id FROM matches WHERE player1 IN (%s, %s) AND " +
+                  "player2 in (%s, %s)", (winner, loser, winner, loser))
         matchId = c.fetchone()
     matchId = matchId[0]
-    c.execute("UPDATE matches SET winner = %s, loser = %s "
-              + "WHERE id = %s", (winner, loser, matchId))
+    c.execute("UPDATE matches SET winner = %s, loser = %s " +
+              "WHERE id = %s", (winner, loser, matchId))
     DB.commit()
     DB.close()
+
 
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
@@ -115,12 +121,12 @@ def swissPairings():
     standings = playerStandings()
     pairings = [(standings[i][0], standings[i][1],
                  standings[i+1][0], standings[i+1][1])
-                 for i in range(0, len(standings), 2)]
+                for i in range(0, len(standings), 2)]
     DB = connect()
     c = DB.cursor()
     for pairs in pairings:
-        c.execute("INSERT INTO matches(player1, player2) "
-                  + "values(%s, %s)", (pairs[0], pairs[2]))
+        c.execute("INSERT INTO matches(player1, player2) " +
+                  "values(%s, %s)", (pairs[0], pairs[2]))
     DB.commit()
     DB.close()
     return pairings
